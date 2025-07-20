@@ -1,4 +1,4 @@
-import { Link } from "lucide-react";
+import Link from "next/link";
 import DesktopNavbar from "../DesktopNavbar";
 import MobileNavbar from "../MobileNavbar";
 
