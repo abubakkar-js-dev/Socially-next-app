@@ -39,3 +39,16 @@ model User{
   notificationCreated Notification[] @relation("notificationCreator") // notifications created by the user
 
 }
+
+
+model Post {
+  id String @id @default(cuid())
+  authorId String
+  content String?
+  image String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relational
+  author User @relation(fields: [authorId], references: [id], onDelete: Cascade) // cascade delete means if the user is deleted, all their posts are also deleted 
+}
