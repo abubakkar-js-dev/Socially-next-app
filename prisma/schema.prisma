@@ -51,4 +51,82 @@ model Post {
 
   // Relational
   author User @relation(fields: [authorId], references: [id], onDelete: Cascade) // cascade delete means if the user is deleted, all their posts are also deleted 
+  comments Comment[]
+  likes Like[]
+  notifications Notification[]
 }
+
+
+model Comment {
+  id String @id @default(cuid())
+  content String
+  authorId String
+  postId String
+  createdAt DateTime @default(now())
+  // updatedAt DateTime @updatedAt
+  notifications Notification[] // comments can have notifications, e.g. when someone replies to a comment
+
+  // Relational
+  author User @relation(fields: [authorId], references: [id], onDelete: Cascade) // cascade delete means if the user is deleted, all their comments are also deleted
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade) // cascade delete means if the post is deleted, all its comments are also deleted
+
+  @@index([authorId,postId]) // composite index for faster queries
+
+}
+
+model Like {
+  id String @id @default(cuid())
+  postId String
+  userId String
+  createdAt DateTime @default(now())
+  
+
+  // Relational
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([userId, postId]) // composite index for faster queries
+  @@unique([userId, postId])
+
+}
+
+model Follows {
+  followerId String 
+  followingId String
+  createdAt DateTime @default(now())
+
+
+  // Relational
+  follower User @relation("follower", fields: [followerId], references: [id], onDelete: Cascade, map: "Follows_followerId_fkey") // user that is being followed
+  following User @relation("following", fields: [followingId], references: [id], onDelete: Cascade, map: "Follows_followingId_fkey") // user that is following
+
+  @@index([followerId, followingId])
+  @@id([followerId, followingId])
+  
+
+}
+
+model Notification {
+  id String @id @default(cuid())
+  userId String
+  creatorId String
+  type NotificationType
+  postId String?
+  commentId String?
+  createdAt DateTime @default(now())
+  
+  // Relational
+  user User @relation("userNotifications", fields: [userId], references: [id], onDelete: Cascade)
+  creator User @relation("notificationCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+  post Post? @relation(fields: [postId], references: [id], onDelete: Cascade)
+  comment Comment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  @@index([userId, createdAt]) // index for faster queries
+  
+
+  }
+
+  enum NotificationType {
+    LIKE
+    COMMENT
+    FOLLOW
+  }
